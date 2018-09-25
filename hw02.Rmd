@@ -1,0 +1,137 @@
+---
+title: "hw02 Explore Gapminder and use dplyr"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Smell test the data
+```{r}
+library(gapminder)
+library(tidyverse)
+```
+Q: Is it a data.frame, a matrix, a vector, a list?
+A: gapminder is a data.frame and a list. 
+```{r}
+is.data.frame(gapminder)
+```
+```{r}
+is.matrix(gapminder)
+```
+```{r}
+is.vector(gapminder)
+```
+
+```{r}
+is.list(gapminder)
+```
+
+Q: What is its class? 
+```{r}
+class(gapminder)
+```
+
+Q: How many variables/columns?
+```{r}
+ncol(gapminder)
+```
+
+Q: How many rows/observations?
+```{r}
+nrow(gapminder)
+```
+
+
+Q: Can you get these facts about “extent” or “size” in more than one way? Can you imagine different functions being useful in different contexts?
+A: We can use the `summary`, and `dim` functions to get basic facts about the dataframe:
+```{r}
+summary(gapminder) %>% 
+  knitr::kable()
+```
+
+```{r}
+dim(gapminder)
+```
+alternatily, we can also use `ncol` and `nrow` to get the size of the dataframe as I did above.
+
+Q: What data type is each variable?
+```{r}
+sapply(gapminder, class) %>% 
+  knitr::kable()
+```
+
+### Explore individual variables
+
+##### Explore categorical variable `continent` and quantitative variable `pop`
+
+What are possible values (or range, whichever is appropriate) of each variable?
+```{r}
+unique(gapminder$continent)
+```
+```{r}
+range(gapminder$pop)
+```
+What values are typical? What’s the spread? What’s the distribution? Etc., tailored to the variable at hand.
+```{r}
+summary(gapminder$continent)
+```
+```{r}
+summary(gapminder$pop)
+```
+
+### Explore various plot types
+A scatterplot of two quantitative variables.
+```{r}
+gapminder %>% 
+  ggplot(aes(lifeExp, log(gdpPercap))) +
+  geom_smooth(method="lm", se=TRUE) + 
+  geom_point()
+```
+
+A plot of one quantitative variable. Maybe a histogram or densityplot or frequency polygon.
+```{r}
+gapminder %>% 
+  ggplot(aes(lifeExp)) +
+  geom_histogram(aes(y=..density..), bins=50) + 
+  geom_density()
+```
+
+
+
+A plot of one quantitative variable and one categorical. Maybe boxplots for several continents or countries.
+```{r}
+gapminder %>% 
+  filter(continent == c("Africa", "Americas", "Asia")) %>% 
+  ggplot(aes(continent, log(pop))) +
+  geom_boxplot(bg="green", color="green") +
+  geom_violin(alpha=0.1, bg="red", color="red")
+```
+
+
+```{r}
+gapminder %>% 
+  select(year, lifeExp, continent) %>% 
+  ggplot(aes(x=year, y=lifeExp, colour=continent)) +
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE)
+```
+
+
+### But I want to do more!
+Q: Evaluate this code and describe the result. Presumably the analyst’s intent was to get the data for Rwanda and Afghanistan. Did they succeed? Why or why not? If not, what is the correct way to do this?
+```{r}
+filter(gapminder, country == c("Rwanda", "Afghanistan")) %>% 
+  knitr::kable()
+```
+
+
+This result fails to show all of the data for 'Rwanda' and 'Afghanistan'. 
+
+```{r}
+gapminder %>%
+  filter(country == "Rwanda" | country == "Afghanistan") %>% 
+  knitr::kable()
+```
+
