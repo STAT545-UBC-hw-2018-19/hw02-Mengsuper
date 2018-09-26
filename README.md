@@ -1,2 +1,4 @@
 # hw02-Mengsuper
-hw02-Mengsuper created by GitHub Classroom
+This is STAT545 homework2 by Meng
+
+Please visit [here](https://github.com/STAT545-UBC-students/hw02-Mengsuper/blob/master/hw02.md) for details.  
