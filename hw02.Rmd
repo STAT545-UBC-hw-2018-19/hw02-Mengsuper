@@ -13,6 +13,7 @@ library(gapminder)
 library(tidyverse)
 ```
 Q: Is it a data.frame, a matrix, a vector, a list?
+
 A: gapminder is a data.frame and a list. 
 ```{r}
 is.data.frame(gapminder)
@@ -45,7 +46,8 @@ nrow(gapminder)
 
 
 Q: Can you get these facts about “extent” or “size” in more than one way? Can you imagine different functions being useful in different contexts?
-A: We can use the `summary`, and `dim` functions to get basic facts about the dataframe:
+
+A: We can use the `summary`, `str`, and `dim` functions to get basic facts about the dataframe:
 ```{r}
 summary(gapminder) %>% 
   knitr::kable()
@@ -54,6 +56,11 @@ summary(gapminder) %>%
 ```{r}
 dim(gapminder)
 ```
+
+```{r}
+str(gapminder)
+```
+
 alternatily, we can also use `ncol` and `nrow` to get the size of the dataframe as I did above.
 
 Q: What data type is each variable?
@@ -67,9 +74,13 @@ sapply(gapminder, class) %>%
 ##### Explore categorical variable `continent` and quantitative variable `pop`
 
 What are possible values (or range, whichever is appropriate) of each variable?
+
+The possible values for `continent` are (use `unique` function): 
 ```{r}
 unique(gapminder$continent)
 ```
+
+The range of `pop` is (use `range` function): 
 ```{r}
 range(gapminder$pop)
 ```
@@ -82,7 +93,8 @@ summary(gapminder$pop)
 ```
 
 ### Explore various plot types
-A scatterplot of two quantitative variables.
+
+A scatterplot of two quantitative variables `lifeExp` and `log(gdpPercap)` fitting using linar regression with error bars: 
 ```{r}
 gapminder %>% 
   ggplot(aes(lifeExp, log(gdpPercap))) +
@@ -90,34 +102,72 @@ gapminder %>%
   geom_point()
 ```
 
-A plot of one quantitative variable. Maybe a histogram or densityplot or frequency polygon.
+A plot of `year` vs `lifeExp`, with points coloured by continent. Then, to that same plot, fit a straight regression line to each continent, with the error bars.
+```{r}
+gapminder %>% 
+  select(year, lifeExp, continent) %>% 
+  ggplot(aes(x=year, y=lifeExp, colour=continent)) +
+  geom_point() +
+  geom_smooth(method="lm", se=TRUE)
+```
+
+A scatterplot of the lifeExp over time (year) using lines, for three countries. Colour by `country`
+
+```{r}
+gapminder %>% 
+  select(year, lifeExp, country) %>% 
+  filter(country == c("China", "United States", "India")) %>% 
+  ggplot(aes(x=year, y=lifeExp)) +
+  geom_point() + 
+  geom_line(aes(color=country))
+```
+A plot the population over time (year) using lines, so that each country has its own line. Colour by `gdpPercap`. 
+
+```{r}
+ggplot(gapminder, aes(year, pop)) + 
+  geom_point() + 
+  geom_line(aes(group=country,  color=gdpPercap))
+```
+
+
+A histogram plot of one quantitative variable `lifeExp` with densityplot.
 ```{r}
 gapminder %>% 
   ggplot(aes(lifeExp)) +
-  geom_histogram(aes(y=..density..), bins=50) + 
+  geom_histogram(aes(y=..density..), bins=50, color="blue", fill="yellow") + 
+  geom_density()
+```
+
+A histogram plot of one quantitative variable `gdpPercap` with densityplot.
+```{r}
+gapminder %>% 
+  ggplot(aes(gdpPercap)) +
+  geom_histogram(aes(y=..density..), bins=50, color="blue", fill="yellow") + 
   geom_density()
 ```
 
 
 
 A plot of one quantitative variable and one categorical. Maybe boxplots for several continents or countries.
+
+A boxplot and violin plot for `pop` and `continent`: 
 ```{r}
 gapminder %>% 
   filter(continent == c("Africa", "Americas", "Asia")) %>% 
   ggplot(aes(continent, log(pop))) +
-  geom_boxplot(bg="green", color="green") +
-  geom_violin(alpha=0.1, bg="red", color="red")
+  geom_boxplot(bg="yellow", color="orange") +
+  geom_violin(alpha=0.1, bg="red") + 
+  geom_jitter(alpha = 0.25)
 ```
 
-
+A bubble plot of `gdpPercap` vs `lifeExp`, size by `pop` and colour by `continent`: 
 ```{r}
 gapminder %>% 
-  select(year, lifeExp, continent) %>% 
-  ggplot(aes(x=year, y=lifeExp, colour=continent)) +
-  geom_point() +
-  geom_smooth(method="lm", se=FALSE)
+  ggplot(aes(gdpPercap, lifeExp)) +
+  scale_x_log10() + 
+  geom_point(aes(size = pop, colour=continent)) +
+  scale_size_area() 
 ```
-
 
 ### But I want to do more!
 Q: Evaluate this code and describe the result. Presumably the analyst’s intent was to get the data for Rwanda and Afghanistan. Did they succeed? Why or why not? If not, what is the correct way to do this?
@@ -127,11 +177,18 @@ filter(gapminder, country == c("Rwanda", "Afghanistan")) %>%
 ```
 
 
-This result fails to show all of the data for 'Rwanda' and 'Afghanistan'. 
+This result fails to show all of the data for 'Rwanda' and 'Afghanistan'. Because, it only filter the data frame by both two countries. Instead, we can use the following code to get all of the data for those tow country. 
 
 ```{r}
 gapminder %>%
   filter(country == "Rwanda" | country == "Afghanistan") %>% 
+  knitr::kable()
+```
+
+Or we can use `%in%` to get the same result
+```{r}
+gapminder %>%
+  filter(country %in% c("Rwanda", "Afghanistan")) %>% 
   knitr::kable()
 ```
 
